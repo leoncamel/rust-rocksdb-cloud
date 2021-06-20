@@ -769,6 +769,33 @@ impl Default for CuckooTableOptions {
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[repr(i32)]
+pub enum LogLevel {
+    Debug = 0,
+    Info,
+    Warn,
+    Error,
+    Fatal,
+    Header,
+}
+
+impl LogLevel {
+    fn from_i32(value: i32) -> LogLevel {
+        match value {
+            0 => LogLevel::Debug,
+            1 => LogLevel::Info,
+            2 => LogLevel::Warn,
+            3 => LogLevel::Error,
+            4 => LogLevel::Fatal,
+            5 => LogLevel::Header,
+            _ => {
+                panic!("Unknown LogLevel : {}", value)
+            }
+        }
+    }
+}
+
 impl Options {
     /// By default, RocksDB uses only one background thread for flush and
     /// compaction. Calling this function will set it up such that total of
@@ -1353,6 +1380,26 @@ impl Options {
         let p = CString::new(path.as_ref().to_string_lossy().as_bytes()).unwrap();
         unsafe {
             ffi::rocksdb_options_set_db_log_dir(self.inner, p.as_ptr());
+        }
+    }
+
+    /// Specifies the level of logging.
+    ///
+    /// Default: Info
+    pub fn set_db_log_level(&mut self, log_level: LogLevel) {
+        let ll = log_level as i32;
+        unsafe {
+            ffi::rocksdb_options_set_info_log_level(self.inner, ll);
+        }
+    }
+
+    /// Get the level of logging.
+    ///
+    pub fn get_db_log_level(&mut self) -> LogLevel {
+        // let ll = log_level as i32;
+        unsafe {
+            let ll = ffi::rocksdb_options_get_info_log_level(self.inner);
+            LogLevel::from_i32(ll)
         }
     }
 

@@ -13,3 +13,9 @@
 [submodule "rocksdb_sys/rocksdb"]
 	path = librocksdb-sys/rocksdb
 	url = https://github.com/leoncamel/rocksdb-cloud.git
+[submodule "librocksdb-sys/aws-sdk-cpp"]
+	path = librocksdb-sys/aws-sdk-cpp
+	url = https://github.com/aws/aws-sdk-cpp
+[submodule "librocksdb-sys/librdkafka"]
+	path = librocksdb-sys/librdkafka
+	url = https://github.com/edenhill/librdkafka

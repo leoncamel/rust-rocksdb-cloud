@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+use cmake::Config;
 
 fn link(name: &str, bundled: bool) {
     use std::env::var;
@@ -83,6 +84,17 @@ fn build_rocksdb() {
         config.include("bzip2/");
     }
 
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    if cfg!(feature = "librdkafka") {
+        config.define("USE_KAFKA", Some("1"));
+        config.include(out_path.join("include/"));
+    }
+
+    if cfg!(feature = "aws") {
+        config.define("USE_AWS", Some("1"));
+        config.include(out_path.join("include/"));
+    }
+
     config.include(".");
     config.define("NDEBUG", Some("1"));
 
@@ -91,6 +103,9 @@ fn build_rocksdb() {
         .split('\n')
         .map(str::trim)
         .collect::<Vec<&'static str>>();
+
+    // config.define("USE_AWS", Some("1"));
+    // config.define("USE_KAFKA", Some("1"));
 
     // We have a pregenerated a version of build_version.cc in the local directory
     lib_sources = lib_sources
@@ -313,6 +328,21 @@ fn build_bzip2() {
     compiler.compile("libbz2.a");
 }
 
+fn build_librdkafka() {
+  
+    let _dst_kafka = Config::new("librdkafka")
+      .define("FOO", "BAR")
+      .define("RDKAFKA_BUILD_STATIC", "1")
+      .build();
+
+    let _dst_aws = Config::new("aws-sdk-cpp")
+      .define("FOO", "BAR")
+      .define("BUILD_SHARED_LIBS", "OFF")
+      .define("ENABLE_TESTING", "OFF")
+      .define("BUILD_ONLY", "kinesis;core;s3;transfer")
+      .build();
+}
+
 fn try_to_find_and_link_lib(lib_name: &str) -> bool {
     if let Ok(v) = env::var(&format!("{}_COMPILE", lib_name)) {
         if v.to_lowercase() == "true" || v == "1" {
@@ -344,6 +374,8 @@ fn cxx_standard() -> String {
 
 fn main() {
     bindgen_rocksdb();
+
+    build_librdkafka();
 
     if !try_to_find_and_link_lib("ROCKSDB") {
         println!("cargo:rerun-if-changed=rocksdb/");
@@ -383,4 +415,11 @@ fn main() {
         fail_on_empty_directory("bzip2");
         build_bzip2();
     }
+    /*
+    if cfg!(feature = "librdkafka") && !try_to_find_and_link_lib("rdkafka") {
+        println!("cargo:rerun-if-changed=librdkafka/");
+        fail_on_empty_directory("librdkafka");
+        build_librdkafka();
+    }
+    */
 }

@@ -17,13 +17,15 @@ exclude = [
 ]
 
 [features]
-default = ["snappy", "lz4", "zstd", "zlib", "bzip2"]
+default = ["snappy", "lz4", "zstd", "zlib", "bzip2", "aws", "librdkafka"]
 valgrind = []
 snappy = ["librocksdb-sys/snappy"]
 lz4 = ["librocksdb-sys/lz4"]
 zstd = ["librocksdb-sys/zstd"]
 zlib = ["librocksdb-sys/zlib"]
 bzip2 = ["librocksdb-sys/bzip2"]
+aws = ["librocksdb-sys/aws-sdk-cpp"]
+librdkafka = ["librocksdb-sys/librdkafka"]
 multi-threaded-cf = []
 
 [dependencies]
